@@ -1,1 +1,1 @@
-my code from Abdul bari's course 
+my code for mike X cohen's Linear algebra course 
