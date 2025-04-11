@@ -1,0 +1,29 @@
+import hashlib
+import hmac
+
+key = "secret"
+
+msg = input("Enter a msg: ")
+
+hash = hmac.new(key.encode(), msg.encode(), hashlib.sha512)
+
+print("HMAC hash Value is ", hash.hexdigest())
+
+
+
+import hashlib
+
+msg= input("Enter a message: ")
+hash = hashlib.md5(msg.encode())
+
+print("Md5 hash value is", hash.hexdigest())
+
+
+
+
+import hashlib
+
+msg= input("Enter a message: ")
+hash = hashlib.sha1(msg.encode())
+
+print("SHA1 hash value is", hash.hexdigest())

@@ -1,0 +1,171 @@
+from Crypto.Cipher import AES
+from secrets import token_bytes
+
+key= token_bytes(16)
+
+def encrypt(msg):
+    cipher=AES.new(key, AES.MODE_EAX)
+    nonce=cipher.nonce
+    ciphertext, tag= cipher.encrypt_and_digest(msg.encode('ascii'))
+    return nonce, ciphertext, tag
+
+def decrypt(nonce, ciphertext, tag):
+    cipher=AES.new(key, AES.MODE_EAX, nonce=nonce)
+    plaintext=cipher.decrypt(ciphertext)
+    try:
+        cipher.verify(tag)
+        return plaintext.decode('ascii')
+    except:
+        return False
+
+nonce, ciphertext, tag = encrypt(input('Enter the message: '))
+plaintext = decrypt(nonce, ciphertext, tag)
+print(f'Cipher text: {ciphertext}')
+
+if not plaintext:
+    print('Message is corrupted')
+else:
+    print(f'Plain text: {plaintext}')
+
+
+
+
+
+
+import rsa
+
+def generate_keys():
+    (pubKey, privKey) = rsa.newkeys(512)
+    with open('keys/pubkey.pem','wb') as f:
+        f.write(pubKey.save_pkcs1('PEM'))
+
+    with open('keys/privkey.pem','wb') as f:
+        f.write(privKey.save_pkcs1('PEM'))
+
+def load_keys():
+    with open('keys/pubkey.pem','rb') as f:
+        pubKey = rsa.PublicKey.load_pkcs1(f.read())
+
+    with open('keys/privkey.pem','rb') as f:
+        privKey = rsa.PrivateKey.load_pkcs1(f.read())
+
+    return pubKey, privKey
+
+def encrypt(msg, key):
+    return rsa.encrypt(msg.encode('ascii'), key)
+
+def decrypt(ciphertext, key):
+    try:
+        return rsa.decrypt(ciphertext, key).decode('ascii')
+    except:
+        return False
+
+def sign_sha1(msg, key):
+    return rsa.sign(msg.encode('ascii'), key, 'SHA-1')
+
+def verify_sha1(msg, signature, key):
+    try:
+        return rsa.verify(msg.encode('ascii'), signature, key) == 'SHA-1'
+    except:
+        return False
+
+generate_keys()
+pubKey, privKey= load_keys()
+
+message = input('Enter a message: ')
+ciphertext = encrypt(message, pubKey)
+
+signature = sign_sha1(message, privKey)
+
+plaintext = decrypt(ciphertext, privKey)
+
+print(f'Cipher text: {ciphertext}')
+print(f'signature: {signature}')
+
+if plaintext:
+    print(f'Plaintext: {plaintext}')
+else:
+    print('Could not decrypt the message.')
+
+if verify_sha1(plaintext, signature, pubKey):
+    print('signature verified')
+else:
+    print('Could not verify the signature.')
+
+
+
+
+
+from Crypto.Cipher import DES3
+from Crypto.Random import get_random_bytes
+
+while True:
+    try:
+        key= DES3.adjust_key_parity(get_random_bytes(24))
+        break
+    except valueError:
+        pass
+
+def encrypt(msg):
+    cipher=DES3.new(key, DES3.MODE_EAX)
+    nonce=cipher.nonce
+    ciphertext, tag = cipher.encrypt_and_digest(msg.encode('ascii'))
+    return nonce, ciphertext, tag
+
+def decrypt(nonce, ciphertext, tag):
+    cipher = DES3.new(key, DES3.MODE_EAX, nonce=nonce)
+    plaintext = cipher.decrypt_and_verify(ciphertext, tag)
+    return plaintext.decode('ascii')
+
+nonce, ciphertext, tag = encrypt(input('Enter the message: '))
+plaintext = decrypt(nonce, ciphertext, tag)
+print(f'Cipher text: {ciphertext}')
+print(f'Plain text: {plaintext}')
+
+
+
+
+
+import math
+
+# step 1
+p = 3
+q = 7
+
+# step 2
+n = p*q
+print("n =", n)
+
+# step 3
+phi = (p-1)*(q-1)
+
+# step 4
+e = 2
+while(e<phi):
+    if (math.gcd(e, phi) == 1):
+        break
+    else:
+        e += 1
+
+print("e =", e)
+# step 5
+k = 2
+d = ((k*phi)+1)/e
+print("d =", d)
+print(f'Public key: {e, n}')
+print(f'Private key: {d, n}')
+
+# plain text
+msg = 12
+print(f'Original message:{msg}')
+
+# encryption
+C = pow(msg, e)
+C = math.fmod(C, n)
+print(f'Encrypted message: {C}')
+
+# decryption
+M = pow(C, d)
+M = math.fmod(M, n)
+
+print(f'Decrypted message: {M}')
